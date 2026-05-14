@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PlacementBoard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#0a0c10;
+  --surface:#111318;
+  --surface-2:#181c24;
+  --surface-3:#1f2430;
+  --border:#252a35;
+  --border-hover:#3a4155;
+  --text:#eef0f5;
+  --muted:#616980;
+  --muted2:#8891a8;
+  --primary:#5b6ef5;
+  --primary-glow:rgba(91,110,245,.18);
+  --primary-hover:#4a5ce8;
+  --green:#34d399;
+  --green-bg:rgba(52,211,153,.1);
+  --yellow:#fbbf24;
+  --yellow-bg:rgba(251,191,36,.1);
+  --blue:#60a5fa;
+  --blue-bg:rgba(96,165,250,.1);
+  --purple:#a78bfa;
+  --purple-bg:rgba(167,139,250,.1);
+  --red:#f87171;
+  --red-bg:rgba(248,113,113,.1);
+  --radius:18px;
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  background-image:radial-gradient(ellipse 80% 40% at 50% -10%, rgba(91,110,245,.12) 0%, transparent 70%);
+}
+button,input,select,textarea{ font:inherit; }
+button{ border:none; cursor:pointer; }
+
+.main{ width:min(1500px,94%); margin:auto; padding:44px 0 80px; }
+
+/* TOPBAR */
+.topbar{
+  display:flex; justify-content:space-between; align-items:flex-end;
+  gap:20px; margin-bottom:36px; flex-wrap:wrap;
+}
+.brand{ display:flex; align-items:center; gap:14px; }
+.brand-icon{
+  width:44px; height:44px; background:var(--primary); border-radius:12px;
+  display:grid; place-items:center; font-size:1.3rem;
+  box-shadow:0 0 24px var(--primary-glow);
+}
+.hero-title{ font-size:1.8rem; font-weight:700; letter-spacing:-0.5px; font-family:'Space Mono',monospace; }
+.hero-sub{ color:var(--muted); margin-top:3px; font-size:.85rem; }
+.topbar-actions{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.search-wrap{ position:relative; }
+.search-icon{
+  position:absolute; left:14px; top:50%; transform:translateY(-50%);
+  color:var(--muted); pointer-events:none; font-size:.9rem;
+}
+.search-input{
+  width:280px; background:var(--surface); border:1px solid var(--border);
+  color:var(--text); padding:11px 16px 11px 38px; border-radius:12px; outline:none; transition:.2s;
+}
+.search-input::placeholder{ color:var(--muted); }
+.search-input:focus{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+.btn-primary{
+  background:var(--primary); color:white; padding:11px 20px; border-radius:12px;
+  font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:7px;
+  transition:.2s; box-shadow:0 4px 18px rgba(91,110,245,.3);
+}
+.btn-primary:hover{ background:var(--primary-hover); transform:translateY(-1px); }
+
+/* STATS */
+.stats-grid{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:14px; margin-bottom:30px;
+}
+.stat-card{
+  background:var(--surface); border:1px solid var(--border); border-radius:16px;
+  padding:18px 20px; display:flex; align-items:center; gap:14px; transition:.2s;
+}
+.stat-card:hover{ border-color:var(--border-hover); }
+.stat-icon{ width:40px; height:40px; border-radius:10px; display:grid; place-items:center; font-size:1.1rem; flex-shrink:0; }
+.stat-icon.indigo{ background:var(--primary-glow); }
+.stat-icon.green{ background:var(--green-bg); }
+.stat-icon.purple{ background:var(--purple-bg); }
+.stat-icon.yellow{ background:var(--yellow-bg); }
+.stat-title{ color:var(--muted); font-size:.78rem; font-weight:500; text-transform:uppercase; letter-spacing:.5px; margin-bottom:4px; }
+.stat-value{ font-size:1.6rem; font-weight:700; font-family:'Space Mono',monospace; line-height:1; }
+
+/* TABLE */
+.table-wrap{ background:var(--surface); border:1px solid var(--border); border-radius:20px; overflow:hidden; }
+.table-head-bar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:16px 22px; border-bottom:1px solid var(--border);
+}
+.table-head-bar-title{ font-weight:600; font-size:.9rem; color:var(--muted2); font-family:'Space Mono',monospace; }
+.count-badge{ background:var(--surface-2); color:var(--muted2); padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:600; }
+.table-scroll{ overflow-x:auto; }
+table{ width:100%; border-collapse:collapse; min-width:900px; }
+thead th{
+  background:var(--surface-2); color:var(--muted); font-size:.75rem; font-weight:600;
+  text-transform:uppercase; letter-spacing:.6px; padding:13px 20px; text-align:left; white-space:nowrap;
+}
+tbody tr{ border-bottom:1px solid var(--border); cursor:pointer; transition:.18s; }
+tbody tr:last-child{ border-bottom:none; }
+tbody tr:hover{ background:var(--surface-2); }
+tbody td{ padding:16px 20px; font-size:.9rem; vertical-align:middle; }
+.td-company{ font-weight:700; font-size:.95rem; }
+.td-role{ color:var(--muted2); font-size:.82rem; margin-top:2px; }
+.td-referral-name{ font-weight:500; }
+.td-referral-none{ color:var(--muted); font-style:italic; font-size:.85rem; }
+.td-salary{ font-family:'Space Mono',monospace; font-size:.85rem; color:var(--green); }
+.td-date{ font-family:'Space Mono',monospace; font-size:.82rem; color:var(--muted2); }
+.deadline-chip{
+  display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:8px;
+  font-size:.76rem; font-weight:700; font-family:'Space Mono',monospace; white-space:nowrap;
+}
+.deadline-chip.urgent{ background:var(--red-bg); color:var(--red); }
+.deadline-chip.soon{ background:var(--yellow-bg); color:var(--yellow); }
+.deadline-chip.ok{ background:var(--green-bg); color:var(--green); }
+.status-pill{ display:inline-flex; align-items:center; gap:6px; padding:5px 11px; border-radius:999px; font-size:.76rem; font-weight:600; white-space:nowrap; }
+.status-pill::before{ content:''; width:6px; height:6px; border-radius:50%; }
+.status-1{ background:var(--yellow-bg); color:var(--yellow); }
+.status-1::before{ background:var(--yellow); }
+.status-2{ background:var(--blue-bg); color:var(--blue); }
+.status-2::before{ background:var(--blue); }
+.status-3{ background:var(--purple-bg); color:var(--purple); }
+.status-3::before{ background:var(--purple); }
+.status-4{ background:var(--green-bg); color:var(--green); }
+.status-4::before{ background:var(--green); }
+.status-5{ background:var(--red-bg); color:var(--red); }
+.status-5::before{ background:var(--red); }
+.empty-row td{ text-align:center; color:var(--muted); padding:60px 20px; cursor:default; }
+
+/* MODAL BACKDROP */
+.modal-backdrop{
+  position:fixed; inset:0; background:rgba(0,0,0,.65); backdrop-filter:blur(6px);
+  display:flex; justify-content:center; align-items:center; padding:20px;
+  opacity:0; pointer-events:none; transition:.22s; z-index:100;
+}
+.modal-backdrop.open{ opacity:1; pointer-events:auto; }
+
+/* DETAIL MODAL */
+.detail-modal{
+  width:min(860px,100%); max-height:92vh; overflow:auto;
+  background:var(--surface); border:1px solid var(--border-hover); border-radius:24px;
+  padding:0; box-shadow:0 30px 80px rgba(0,0,0,.5);
+  transform:translateY(16px) scale(.98); transition:.22s;
+}
+.modal-backdrop.open .detail-modal{ transform:none; }
+
+/* Modal Header */
+.dm-header{
+  padding:28px 30px 24px;
+  border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+}
+.dm-header-left{ flex:1; min-width:0; }
+.dm-company-view{
+  font-size:1.75rem; font-weight:700; font-family:'Space Mono',monospace;
+  letter-spacing:-0.5px; line-height:1.2; margin-bottom:4px;
+  word-break:break-word;
+}
+.dm-role-view{ color:var(--muted2); font-size:.95rem; }
+.dm-header-right{ display:flex; gap:8px; flex-shrink:0; align-items:flex-start; }
+.close-btn{
+  width:38px; height:38px; border-radius:10px; background:var(--surface-2);
+  color:var(--muted2); font-size:1rem; flex-shrink:0; transition:.15s;
+}
+.close-btn:hover{ background:var(--surface-3); color:var(--text); }
+.btn-edit{
+  background:var(--primary-glow); color:var(--primary); border:1px solid rgba(91,110,245,.3);
+  padding:8px 16px; border-radius:10px; font-weight:600; font-size:.85rem;
+  display:flex; align-items:center; gap:6px; transition:.2s;
+}
+.btn-edit:hover{ background:rgba(91,110,245,.25); }
+.btn-edit.active{ background:var(--primary); color:white; border-color:var(--primary); }
+
+/* Modal Body */
+.dm-body{ padding:24px 30px; }
+
+/* Info Grid */
+.info-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:24px;
+}
+.info-block{
+  background:var(--surface-2); border:1px solid var(--border); border-radius:14px;
+  padding:14px 16px; transition:.2s;
+}
+.info-block.full{ grid-column:1/-1; }
+.info-block.editing{ border-color:transparent; }
+.info-block.editing:focus-within{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+.info-label{ color:var(--muted); font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+.info-value{ font-weight:600; font-size:.92rem; line-height:1.5; color:var(--text); }
+.info-value.muted{ color:var(--muted); font-weight:400; font-style:italic; }
+.info-value.green{ color:var(--green); font-family:'Space Mono',monospace; }
+.info-value.mono{ font-family:'Space Mono',monospace; }
+.info-input{
+  background:transparent; border:none; outline:none; color:var(--text);
+  font-weight:600; font-size:.92rem; width:100%; line-height:1.5;
+}
+.info-input::placeholder{ color:var(--muted); font-weight:400; }
+
+/* Multi-item lists */
+.multi-list{ display:flex; flex-direction:column; gap:8px; }
+.multi-item{
+  display:flex; align-items:center; gap:8px;
+}
+.multi-item-text{ flex:1; font-weight:500; font-size:.9rem; word-break:break-all; }
+.multi-item-link{ color:var(--blue); font-size:.88rem; text-decoration:none; word-break:break-all; }
+.multi-item-link:hover{ text-decoration:underline; }
+.multi-pair{ background:var(--surface-3); border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:4px; }
+.multi-pair-name{ font-weight:600; font-size:.9rem; }
+.multi-pair-link{ color:var(--blue); font-size:.82rem; text-decoration:none; }
+.multi-pair-link:hover{ text-decoration:underline; }
+.remove-btn{
+  width:24px; height:24px; border-radius:6px; background:var(--red-bg); color:var(--red);
+  font-size:.85rem; display:grid; place-items:center; flex-shrink:0; transition:.15s;
+  line-height:1;
+}
+.remove-btn:hover{ background:rgba(248,113,113,.2); }
+.add-item-btn{
+  background:transparent; color:var(--primary); border:1px dashed rgba(91,110,245,.4);
+  padding:7px 12px; border-radius:8px; font-size:.8rem; font-weight:600;
+  display:flex; align-items:center; gap:5px; transition:.2s; margin-top:4px; width:fit-content;
+}
+.add-item-btn:hover{ background:var(--primary-glow); border-color:var(--primary); }
+.edit-input-sm{
+  background:var(--surface); border:1px solid var(--border); color:var(--text);
+  padding:7px 10px; border-radius:8px; outline:none; font-size:.85rem; transition:.2s; flex:1;
+}
+.edit-input-sm:focus{ border-color:var(--primary); }
+.edit-input-sm::placeholder{ color:var(--muted); }
+
+/* Days left edit */
+.days-left-edit{ display:flex; align-items:center; gap:10px; }
+.days-number-input{
+  background:var(--surface); border:1px solid var(--border); color:var(--text);
+  padding:7px 10px; border-radius:8px; outline:none; font-family:'Space Mono',monospace;
+  font-size:.9rem; width:80px; transition:.2s;
+}
+.days-number-input:focus{ border-color:var(--primary); }
+.days-set-btn{
+  background:var(--primary); color:white; padding:7px 14px; border-radius:8px;
+  font-size:.8rem; font-weight:600; transition:.2s;
+}
+.days-set-btn:hover{ background:var(--primary-hover); }
+
+/* Timeline */
+.timeline-section{ margin-bottom:24px; }
+.section-label{ color:var(--muted); font-size:.75rem; font-weight:600; text-transform:uppercase; letter-spacing:.6px; margin-bottom:14px; }
+.timeline{ display:flex; flex-direction:column; gap:0; }
+.timeline-item{ display:flex; gap:14px; align-items:stretch; }
+.timeline-left{ display:flex; flex-direction:column; align-items:center; width:20px; flex-shrink:0; }
+.timeline-dot{
+  width:14px; height:14px; border-radius:50%; border:2px solid var(--border);
+  background:var(--surface); flex-shrink:0; margin-top:16px; transition:.2s; cursor:pointer;
+}
+.timeline-dot.done{ background:var(--primary); border-color:var(--primary); box-shadow:0 0 10px var(--primary-glow); }
+.timeline-line{ flex:1; width:2px; background:var(--border); margin:2px 0; }
+.timeline-item:last-child .timeline-line{ display:none; }
+.timeline-content{
+  background:var(--surface-2); border-radius:12px; padding:12px 16px; flex:1;
+  margin-bottom:10px; border:1px solid transparent; transition:.2s; cursor:pointer;
+}
+.timeline-content:hover{ border-color:var(--border-hover); }
+.timeline-content.done{ border-color:rgba(91,110,245,.3); }
+.timeline-title{ font-weight:600; font-size:.88rem; margin-bottom:2px; }
+.timeline-sub{ color:var(--muted); font-size:.8rem; }
+
+/* Notes */
+.notes-textarea{
+  width:100%; background:transparent; border:none; outline:none; color:var(--text);
+  font-size:.9rem; resize:vertical; min-height:70px; line-height:1.6;
+}
+.notes-textarea::placeholder{ color:var(--muted); }
+.notes-view{ font-size:.9rem; line-height:1.6; white-space:pre-wrap; word-break:break-word; }
+.notes-view.empty{ color:var(--muted); font-style:italic; }
+
+/* Actions */
+.dm-actions{
+  display:flex; gap:10px; justify-content:flex-end;
+  padding:20px 30px; border-top:1px solid var(--border);
+}
+.btn-save{
+  background:var(--primary); color:white; padding:11px 24px; border-radius:12px;
+  font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:7px;
+  transition:.2s; box-shadow:0 4px 18px rgba(91,110,245,.3);
+}
+.btn-save:hover{ background:var(--primary-hover); transform:translateY(-1px); }
+.btn-danger{
+  background:var(--red-bg); color:var(--red); border:1px solid rgba(248,113,113,.2);
+  padding:11px 20px; border-radius:12px; font-weight:600; font-size:.9rem; transition:.2s;
+}
+.btn-danger:hover{ background:rgba(248,113,113,.18); }
+
+/* ADD MODAL */
+.add-modal{
+  width:min(600px,100%); max-height:92vh; overflow:auto;
+  background:var(--surface); border:1px solid var(--border-hover); border-radius:24px;
+  padding:30px; box-shadow:0 30px 80px rgba(0,0,0,.5);
+  transform:translateY(16px) scale(.98); transition:.22s;
+}
+.modal-backdrop.open .add-modal{ transform:none; }
+.modal-title{ font-size:1.3rem; font-weight:700; font-family:'Space Mono',monospace; margin-bottom:4px; }
+.modal-subtitle{ color:var(--muted); font-size:.85rem; }
+.modal-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:24px; padding-bottom:20px; border-bottom:1px solid var(--border); }
+.form-group{ margin-bottom:16px; }
+.form-label{ display:block; color:var(--muted); font-size:.78rem; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:7px; }
+.form-input{
+  width:100%; background:var(--surface-2); border:1px solid var(--border);
+  color:var(--text); padding:11px 14px; border-radius:10px; outline:none; transition:.2s;
+}
+.form-input::placeholder{ color:var(--muted); }
+.form-input:focus{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+.form-row{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+
+/* TOAST */
+.save-toast{
+  position:fixed; bottom:30px; right:30px;
+  background:var(--green-bg); color:var(--green); border:1px solid rgba(52,211,153,.25);
+  padding:12px 20px; border-radius:12px; font-weight:600; font-size:.88rem;
+  display:flex; align-items:center; gap:8px;
+  opacity:0; transform:translateY(10px); pointer-events:none; transition:.3s; z-index:999;
+}
+.save-toast.show{ opacity:1; transform:none; }
+
+/* hidden in view mode, shown in edit mode */
+.edit-only{ display:none; }
+.view-only{ display:block; }
+.modal-in-edit .edit-only{ display:block; }
+.modal-in-edit .view-only{ display:none; }
+.modal-in-edit .info-block{ border-color:var(--border); }
+.modal-in-edit .info-block:focus-within{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-glow); }
+
+@media(max-width:760px){
+  .info-grid{ grid-template-columns:1fr; }
+  .form-row{ grid-template-columns:1fr; }
+  .search-input{ width:100%; }
+  .topbar-actions{ width:100%; }
+  .hero-title{ font-size:1.4rem; }
+  .dm-body{ padding:18px 18px; }
+  .dm-header{ padding:20px 18px 18px; }
+  .dm-actions{ padding:16px 18px; }
+}
+</style>
+</head>
+<body>
+
+<main class="main">
+
+  <section class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🎯</div>
+      <div>
+        <h1 class="hero-title">PlacementBoard</h1>
+        <p class="hero-sub">Referral tracker for placements &amp; internships</p>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search company, role…">
+      </div>
+      <button class="btn-primary" id="addBtn"><span>+</span> Add Listing</button>
+    </div>
+  </section>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon indigo">📋</div>
+      <div><div class="stat-title">Total Listings</div><div class="stat-value" id="statTotal">0</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon green">✅</div>
+      <div><div class="stat-title">Referral Received</div><div class="stat-value" id="statReferral">0</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon purple">📅</div>
+      <div><div class="stat-title">Interview Scheduled</div><div class="stat-value" id="statInterview">0</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon yellow">💰</div>
+      <div><div class="stat-title">Average Salary</div><div class="stat-value" id="statSalary">—</div></div>
+    </div>
+  </section>
+
+  <div class="table-wrap">
+    <div class="table-head-bar">
+      <div class="table-head-bar-title">Listings</div>
+      <span class="count-badge" id="countBadge">0 entries</span>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Company / Role</th>
+            <th>Referrals</th>
+            <th>Salary</th>
+            <th>Drive Date</th>
+            <th>Last Date</th>
+            <th>Days Left</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- Detail/Edit Modal -->
+<div class="modal-backdrop" id="detailModal">
+  <div class="detail-modal" id="detailModalInner">
+
+    <div class="dm-header">
+      <div class="dm-header-left">
+        <!-- VIEW mode -->
+        <div class="view-only">
+          <div class="dm-company-view" id="vCompany"></div>
+          <div class="dm-role-view" id="vRole"></div>
+        </div>
+        <!-- EDIT mode -->
+        <div class="edit-only">
+          <input class="dm-company-view" id="eCompany" placeholder="Company name" style="background:transparent;border:none;outline:none;width:100%;border-bottom:1px solid var(--border);padding-bottom:4px;margin-bottom:6px;" />
+          <input style="background:transparent;border:none;outline:none;width:100%;color:var(--muted2);font-size:.95rem;" id="eRole" placeholder="Role / Position" />
+        </div>
+      </div>
+      <div class="dm-header-right">
+        <button class="btn-edit" id="editToggleBtn">✏️ Edit</button>
+        <button class="close-btn" id="closeDetailModal">✕</button>
+      </div>
+    </div>
+
+    <div class="dm-body">
+
+      <!-- Info Grid -->
+      <div class="info-grid" id="infoGrid">
+
+        <!-- Salary -->
+        <div class="info-block" id="ibSalary">
+          <div class="info-label">Salary</div>
+          <div class="view-only info-value green" id="vSalary"></div>
+          <div class="edit-only"><input class="info-input" id="eSalary" placeholder="e.g. 45 LPA" /></div>
+        </div>
+
+        <!-- Drive Date -->
+        <div class="info-block" id="ibDrive">
+          <div class="info-label">Drive Date</div>
+          <div class="view-only info-value mono" id="vDrive"></div>
+          <div class="edit-only"><input class="info-input" type="date" id="eDrive" /></div>
+        </div>
+
+        <!-- Last Date -->
+        <div class="info-block" id="ibLast">
+          <div class="info-label">Last Date to Apply</div>
+          <div class="view-only info-value mono" id="vLast"></div>
+          <div class="edit-only"><input class="info-input" type="date" id="eLast" /></div>
+        </div>
+
+        <!-- Days Left -->
+        <div class="info-block" id="ibDays">
+          <div class="info-label">
+            <span>Days Left</span>
+          </div>
+          <div class="view-only info-value" id="vDays"></div>
+          <div class="edit-only">
+            <div class="days-left-edit">
+              <input class="days-number-input" type="number" id="eDaysLeft" placeholder="e.g. 10" min="0" />
+              <span style="color:var(--muted);font-size:.8rem;">days from today</span>
+            </div>
+            <div style="color:var(--muted);font-size:.75rem;margin-top:5px;">Overwrites auto-calc. Decrements daily (IST).</div>
+          </div>
+        </div>
+
+        <!-- Referrals - full width -->
+        <div class="info-block full" id="ibReferrals">
+          <div class="info-label">
+            <span>Referral Contacts</span>
+            <button class="add-item-btn edit-only" id="addReferralBtn">+ Add Contact</button>
+          </div>
+          <!-- VIEW -->
+          <div class="view-only" id="vReferrals"></div>
+          <!-- EDIT -->
+          <div class="edit-only" id="eReferrals"></div>
+        </div>
+
+        <!-- HR Emails - full width -->
+        <div class="info-block full" id="ibEmails">
+          <div class="info-label">
+            <span>HR Emails</span>
+            <button class="add-item-btn edit-only" id="addEmailBtn">+ Add Email</button>
+          </div>
+          <!-- VIEW -->
+          <div class="view-only" id="vEmails"></div>
+          <!-- EDIT -->
+          <div class="edit-only" id="eEmails"></div>
+        </div>
+
+        <!-- Notes - full width -->
+        <div class="info-block full" id="ibNotes">
+          <div class="info-label">Notes</div>
+          <div class="view-only" id="vNotes"></div>
+          <div class="edit-only">
+            <textarea class="notes-textarea" id="eNotes" placeholder="Any additional notes…"></textarea>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Timeline -->
+      <div class="timeline-section">
+        <div class="section-label">Progress Timeline — click to toggle</div>
+        <div class="timeline" id="timeline"></div>
+      </div>
+
+    </div><!-- /dm-body -->
+
+    <div class="dm-actions" id="dmActions">
+      <button class="btn-danger edit-only" id="deleteBtn">🗑 Delete</button>
+      <button class="btn-save edit-only" id="saveBtn">💾 Save Changes</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-backdrop" id="addModal">
+  <div class="add-modal">
+    <div class="modal-top">
+      <div>
+        <div class="modal-title">New Listing</div>
+        <div class="modal-subtitle">Add a placement or internship opportunity</div>
+      </div>
+      <button class="close-btn" id="closeAddModal">✕</button>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Company *</label><input class="form-input" id="aCompany" placeholder="e.g. Google" /></div>
+      <div class="form-group"><label class="form-label">Role *</label><input class="form-input" id="aRole" placeholder="e.g. SDE Intern" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Referral Name</label><input class="form-input" id="aReferral" placeholder="Contact person" /></div>
+      <div class="form-group"><label class="form-label">Referral LinkedIn</label><input class="form-input" id="aLink" placeholder="https://linkedin.com/in/..." /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Salary</label><input class="form-input" id="aSalary" placeholder="e.g. 30 LPA" /></div>
+      <div class="form-group"><label class="form-label">HR Email</label><input class="form-input" id="aEmails" placeholder="hr@company.com" /></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Drive Date</label><input class="form-input" type="date" id="aDrive" /></div>
+      <div class="form-group"><label class="form-label">Last Date *</label><input class="form-input" type="date" id="aLast" /></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><textarea class="form-input" id="aNotes" placeholder="Any additional notes…" style="resize:vertical;min-height:60px;"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--border);">
+      <button class="btn-save" id="submitAddBtn" style="width:100%;justify-content:center;">+ Add Listing</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="save-toast" id="toast">✓ Changes saved</div>
+
+<script>
+/* ── DATA ── */
+let records = [
+  {
+    id:1,
+    company:"Google",
+    role:"Software Engineer Intern",
+    referrals:[{ name:"Rahul Sharma", link:"https://linkedin.com/in/rahul" }],
+    salary:"45 LPA",
+    driveDate:"2026-08-10",
+    lastDate:"2026-06-01",
+    hrEmails:["google-campus@google.com"],
+    notes:"Strong referral. Prepare DSA.",
+    daysLeftOverride:null,
+    daysLeftSetOn:null,
+    updates:{ referralAsked:true, communicating:true, referralReceived:true, interviewScheduled:false }
+  },
+  {
+    id:2,
+    company:"Microsoft",
+    role:"SDE",
+    referrals:[],
+    salary:"52 LPA",
+    driveDate:"2026-07-21",
+    lastDate:"2026-05-30",
+    hrEmails:["microsoft@careers.com"],
+    notes:"",
+    daysLeftOverride:null,
+    daysLeftSetOn:null,
+    updates:{ referralAsked:true, communicating:false, referralReceived:false, interviewScheduled:false }
+  },
+  {
+    id:3,
+    company:"Amazon",
+    role:"Cloud Support Associate",
+    referrals:[
+      { name:"Ananya Patil", link:"https://linkedin.com/in/ananya" },
+      { name:"Karan Mehta", link:"" }
+    ],
+    salary:"18 LPA",
+    driveDate:"2026-06-28",
+    lastDate:"2026-05-25",
+    hrEmails:["amazon@jobs.com","aws-hr@amazon.com"],
+    notes:"Two referrals secured. Drive in June.",
+    daysLeftOverride:null,
+    daysLeftSetOn:null,
+    updates:{ referralAsked:true, communicating:true, referralReceived:true, interviewScheduled:true }
+  }
+];
+
+let nextId = 4;
+let editingId = null;
+let isEditing = false;
+
+/* ── DATE HELPERS ── */
+
+// Get today's date string in IST (YYYY-MM-DD)
+function todayIST(){
+  const now = new Date();
+  // IST = UTC+5:30
+  const istOffset = 5.5 * 60 * 60000;
+  const istNow = new Date(now.getTime() + istOffset - now.getTimezoneOffset()*60000);
+  // Actually easier: use toLocaleDateString
+  const d = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDDMMYY(isoDate){
+  if(!isoDate) return "—";
+  const [y,m,d] = isoDate.split("-");
+  if(!y||!m||!d) return "—";
+  return `${d}/${m}/${y.slice(2)}`;
+}
+
+function daysBetween(isoA, isoB){
+  // days from isoA to isoB
+  const a = new Date(isoA);
+  const b = new Date(isoB);
+  return Math.round((b - a) / (1000*60*60*24));
+}
+
+function getDaysLeft(record){
+  if(record.daysLeftOverride !== null && record.daysLeftSetOn){
+    const elapsed = daysBetween(record.daysLeftSetOn, todayIST());
+    return record.daysLeftOverride - elapsed;
+  }
+  // compute from lastDate
+  const today = todayIST();
+  return daysBetween(today, record.lastDate);
+}
+
+function deadlineChip(days){
+  if(days < 0)   return `<span class="deadline-chip urgent">Expired</span>`;
+  if(days <= 7)  return `<span class="deadline-chip urgent">⚡ ${days}d</span>`;
+  if(days <= 14) return `<span class="deadline-chip soon">⏳ ${days}d</span>`;
+  return `<span class="deadline-chip ok">✓ ${days}d</span>`;
+}
+
+function getStatus(record){
+  const u = record.updates;
+  if(u.interviewScheduled) return ["Interview Scheduled","status-5"];
+  if(u.referralReceived)   return ["Referral Received","status-4"];
+  if(u.communicating)      return ["Communicating","status-3"];
+  if(u.referralAsked)      return ["Asked Referral","status-2"];
+  return ["Not Started","status-1"];
+}
+
+/* ── TABLE RENDER ── */
+function renderTable(data){
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  document.getElementById("countBadge").textContent = `${data.length} entr${data.length===1?"y":"ies"}`;
+
+  if(!data.length){
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="7">No listings found</td></tr>`;
+    updateStats(); return;
+  }
+
+  data.forEach(r=>{
+    const days = getDaysLeft(r);
+    const [statusText, statusClass] = getStatus(r);
+    const referralDisplay = r.referrals.length
+      ? r.referrals.map(ref=>`<span class="td-referral-name">${ref.name}</span>`).join(', ')
+      : `<span class="td-referral-none">— none</span>`;
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><div class="td-company">${r.company}</div><div class="td-role">${r.role}</div></td>
+      <td>${referralDisplay}</td>
+      <td><span class="td-salary">${r.salary || "—"}</span></td>
+      <td><span class="td-date">${formatDDMMYY(r.driveDate)}</span></td>
+      <td><span class="td-date">${formatDDMMYY(r.lastDate)}</span></td>
+      <td>${deadlineChip(days)}</td>
+      <td><span class="status-pill ${statusClass}">${statusText}</span></td>
+    `;
+    tr.onclick = ()=> openDetailModal(r.id, false);
+    tbody.appendChild(tr);
+  });
+
+  updateStats();
+}
+
+function updateStats(){
+  document.getElementById("statTotal").textContent = records.length;
+  document.getElementById("statReferral").textContent = records.filter(r=>r.updates.referralReceived).length;
+  document.getElementById("statInterview").textContent = records.filter(r=>r.updates.interviewScheduled).length;
+  const salaries = records.map(r=>parseFloat(r.salary)).filter(n=>!isNaN(n));
+  if(salaries.length){
+    const avg = salaries.reduce((a,b)=>a+b,0)/salaries.length;
+    document.getElementById("statSalary").textContent = avg.toFixed(1)+" LPA";
+  } else {
+    document.getElementById("statSalary").textContent = "—";
+  }
+}
+
+/* ── DETAIL MODAL ── */
+const STAGES = [
+  { key:"referralAsked",      label:"Asked For Referral" },
+  { key:"communicating",      label:"Communicating For Referral" },
+  { key:"referralReceived",   label:"Referral Received" },
+  { key:"interviewScheduled", label:"Interview Scheduled" }
+];
+
+function openDetailModal(id, editMode){
+  const r = records.find(x=>x.id===id);
+  if(!r) return;
+  editingId = id;
+  populateModal(r);
+  setEditMode(editMode || false);
+  document.getElementById("detailModal").classList.add("open");
+}
+
+function populateModal(r){
+  const days = getDaysLeft(r);
+
+  // VIEW fields
+  document.getElementById("vCompany").textContent = r.company;
+  document.getElementById("vRole").textContent = r.role;
+  document.getElementById("vSalary").textContent = r.salary || "—";
+  document.getElementById("vDrive").textContent = formatDDMMYY(r.driveDate);
+  document.getElementById("vLast").textContent = formatDDMMYY(r.lastDate);
+  document.getElementById("vDays").innerHTML = deadlineChip(days) + `<span style="color:var(--muted);font-size:.8rem;margin-left:8px;">${days >= 0 ? days+" days remaining" : "Deadline passed"}</span>`;
+
+  // EDIT fields
+  document.getElementById("eCompany").value = r.company;
+  document.getElementById("eRole").value = r.role;
+  document.getElementById("eSalary").value = r.salary;
+  document.getElementById("eDrive").value = r.driveDate || "";
+  document.getElementById("eLast").value = r.lastDate;
+  document.getElementById("eDaysLeft").value = r.daysLeftOverride !== null ? (r.daysLeftOverride - (r.daysLeftSetOn ? daysBetween(r.daysLeftSetOn, todayIST()) : 0)) : "";
+  document.getElementById("eNotes").value = r.notes || "";
+
+  // VIEW referrals
+  const vRef = document.getElementById("vReferrals");
+  if(r.referrals.length){
+    vRef.innerHTML = '<div class="multi-list">' + r.referrals.map(ref=>`
+      <div class="multi-pair">
+        <div class="multi-pair-name">${ref.name || "Unnamed"}</div>
+        ${ref.link ? `<a class="multi-pair-link" href="${ref.link}" target="_blank" rel="noopener">${ref.link}</a>` : '<span style="color:var(--muted);font-size:.8rem;">No LinkedIn</span>'}
+      </div>
+    `).join('') + '</div>';
+  } else {
+    vRef.innerHTML = '<span class="info-value muted">No referral contacts</span>';
+  }
+
+  // VIEW emails
+  const vEm = document.getElementById("vEmails");
+  if(r.hrEmails && r.hrEmails.filter(e=>e).length){
+    vEm.innerHTML = '<div class="multi-list">' + r.hrEmails.filter(e=>e).map(e=>`
+      <div class="multi-item">
+        <span class="multi-item-text">${e}</span>
+        <a href="mailto:${e}" style="color:var(--blue);font-size:.8rem;text-decoration:none;">✉ Mail</a>
+      </div>
+    `).join('') + '</div>';
+  } else {
+    vEm.innerHTML = '<span class="info-value muted">No HR emails</span>';
+  }
+
+  // VIEW notes
+  const vNotes = document.getElementById("vNotes");
+  if(r.notes && r.notes.trim()){
+    vNotes.innerHTML = `<div class="notes-view">${r.notes}</div>`;
+  } else {
+    vNotes.innerHTML = '<div class="notes-view empty">No notes added</div>';
+  }
+
+  // EDIT referrals
+  renderEditReferrals(r.referrals);
+
+  // EDIT emails
+  renderEditEmails(r.hrEmails || []);
+
+  // Timeline
+  renderTimeline(r);
+}
+
+/* ── EDIT referrals ── */
+function renderEditReferrals(referrals){
+  const container = document.getElementById("eReferrals");
+  container.innerHTML = "";
+  referrals.forEach((ref, i)=>{
+    const row = document.createElement("div");
+    row.className = "multi-item";
+    row.style.cssText = "align-items:flex-start;flex-direction:column;gap:6px;background:var(--surface-3);border-radius:10px;padding:10px 12px;margin-bottom:8px;";
+    row.innerHTML = `
+      <div style="display:flex;gap:8px;width:100%;align-items:center;">
+        <input class="edit-input-sm" data-ref-name="${i}" placeholder="Name e.g. Rahul Sharma" value="${ref.name}" style="flex:1;" />
+        <button class="remove-btn" data-remove-ref="${i}" title="Remove">✕</button>
+      </div>
+      <input class="edit-input-sm" data-ref-link="${i}" placeholder="LinkedIn URL (optional)" value="${ref.link}" style="width:100%;" />
+    `;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll("[data-remove-ref]").forEach(btn=>{
+    btn.onclick = ()=>{
+      const r = records.find(x=>x.id===editingId);
+      if(!r) return;
+      r.referrals.splice(parseInt(btn.dataset.removeRef), 1);
+      renderEditReferrals(r.referrals);
+    };
+  });
+}
+
+document.getElementById("addReferralBtn").onclick = ()=>{
+  const r = records.find(x=>x.id===editingId);
+  if(!r) return;
+  r.referrals.push({ name:"", link:"" });
+  renderEditReferrals(r.referrals);
+};
+
+/* ── EDIT emails ── */
+function renderEditEmails(emails){
+  const container = document.getElementById("eEmails");
+  container.innerHTML = "";
+  emails.forEach((email, i)=>{
+    const row = document.createElement("div");
+    row.className = "multi-item";
+    row.style.cssText = "margin-bottom:8px;";
+    row.innerHTML = `
+      <input class="edit-input-sm" data-email-idx="${i}" placeholder="hr@company.com" value="${email}" />
+      <button class="remove-btn" data-remove-email="${i}" title="Remove">✕</button>
+    `;
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll("[data-remove-email]").forEach(btn=>{
+    btn.onclick = ()=>{
+      const r = records.find(x=>x.id===editingId);
+      if(!r) return;
+      r.hrEmails.splice(parseInt(btn.dataset.removeEmail), 1);
+      renderEditEmails(r.hrEmails);
+    };
+  });
+}
+
+document.getElementById("addEmailBtn").onclick = ()=>{
+  const r = records.find(x=>x.id===editingId);
+  if(!r) return;
+  r.hrEmails.push("");
+  renderEditEmails(r.hrEmails);
+};
+
+/* ── TIMELINE ── */
+function renderTimeline(r){
+  const tl = document.getElementById("timeline");
+  tl.innerHTML = "";
+  STAGES.forEach(s=>{
+    const done = r.updates[s.key];
+    const item = document.createElement("div");
+    item.className = "timeline-item";
+    item.innerHTML = `
+      <div class="timeline-left">
+        <div class="timeline-dot ${done?"done":""}" data-key="${s.key}"></div>
+        <div class="timeline-line"></div>
+      </div>
+      <div class="timeline-content ${done?"done":""}">
+        <div class="timeline-title">${s.label}</div>
+        <div class="timeline-sub">${done?"Completed":"Pending — click to mark done"}</div>
+      </div>
+    `;
+    function toggle(){
+      const rec = records.find(x=>x.id===editingId);
+      if(!rec) return;
+      rec.updates[s.key] = !rec.updates[s.key];
+      renderTimeline(rec);
+    }
+    item.querySelector(".timeline-dot").onclick = toggle;
+    item.querySelector(".timeline-content").onclick = toggle;
+    tl.appendChild(item);
+  });
+}
+
+/* ── EDIT MODE TOGGLE ── */
+function setEditMode(on){
+  isEditing = on;
+  const modal = document.getElementById("detailModalInner");
+  if(on){
+    modal.classList.add("modal-in-edit");
+    document.getElementById("editToggleBtn").textContent = "👁 View";
+    document.getElementById("editToggleBtn").classList.add("active");
+  } else {
+    modal.classList.remove("modal-in-edit");
+    document.getElementById("editToggleBtn").textContent = "✏️ Edit";
+    document.getElementById("editToggleBtn").classList.remove("active");
+  }
+}
+
+document.getElementById("editToggleBtn").onclick = ()=>{
+  if(isEditing){
+    // discard changes - re-populate from record
+    const r = records.find(x=>x.id===editingId);
+    if(r) populateModal(r);
+    setEditMode(false);
+  } else {
+    setEditMode(true);
+  }
+};
+
+/* ── SAVE ── */
+document.getElementById("saveBtn").onclick = ()=>{
+  if(editingId===null) return;
+  const r = records.find(x=>x.id===editingId);
+  if(!r) return;
+
+  r.company = document.getElementById("eCompany").value.trim() || r.company;
+  r.role    = document.getElementById("eRole").value.trim() || r.role;
+  r.salary  = document.getElementById("eSalary").value.trim();
+  r.driveDate = document.getElementById("eDrive").value;
+  r.lastDate  = document.getElementById("eLast").value || r.lastDate;
+  r.notes   = document.getElementById("eNotes").value.trim();
+
+  // Days left override
+  const dlVal = document.getElementById("eDaysLeft").value;
+  if(dlVal !== "" && !isNaN(parseInt(dlVal))){
+    r.daysLeftOverride = parseInt(dlVal);
+    r.daysLeftSetOn = todayIST();
+  } else if(dlVal === ""){
+    r.daysLeftOverride = null;
+    r.daysLeftSetOn = null;
+  }
+
+  // Collect referral edits from inputs
+  const refNameInputs = document.querySelectorAll("[data-ref-name]");
+  const refLinkInputs = document.querySelectorAll("[data-ref-link]");
+  r.referrals = [];
+  refNameInputs.forEach((inp, i)=>{
+    const linkInp = document.querySelector(`[data-ref-link="${inp.dataset.refName}"]`);
+    const name = inp.value.trim();
+    const link = linkInp ? linkInp.value.trim() : "";
+    if(name || link) r.referrals.push({ name, link });
+  });
+
+  // Collect email edits
+  const emailInputs = document.querySelectorAll("[data-email-idx]");
+  r.hrEmails = [];
+  emailInputs.forEach(inp=>{
+    const v = inp.value.trim();
+    if(v) r.hrEmails.push(v);
+  });
+
+  populateModal(r);
+  setEditMode(false);
+  renderTable(getCurrentFilter());
+  showToast("Changes saved");
+};
+
+/* ── DELETE ── */
+document.getElementById("deleteBtn").onclick = ()=>{
+  if(editingId===null) return;
+  if(!confirm("Delete this listing?")) return;
+  records = records.filter(x=>x.id!==editingId);
+  closeDetailModal();
+  renderTable(getCurrentFilter());
+  showToast("Listing deleted");
+};
+
+/* ── CLOSE DETAIL ── */
+function closeDetailModal(){
+  document.getElementById("detailModal").classList.remove("open");
+  editingId = null;
+  isEditing = false;
+  setEditMode(false);
+}
+
+document.getElementById("closeDetailModal").onclick = closeDetailModal;
+document.getElementById("detailModal").onclick = e=>{
+  if(e.target.id==="detailModal") closeDetailModal();
+};
+
+/* ── ADD MODAL ── */
+document.getElementById("addBtn").onclick = ()=>{
+  ["aCompany","aRole","aReferral","aLink","aSalary","aEmails","aDrive","aLast","aNotes"]
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  document.getElementById("addModal").classList.add("open");
+};
+
+document.getElementById("closeAddModal").onclick = ()=>
+  document.getElementById("addModal").classList.remove("open");
+
+document.getElementById("addModal").onclick = e=>{
+  if(e.target.id==="addModal") document.getElementById("addModal").classList.remove("open");
+};
+
+document.getElementById("submitAddBtn").onclick = ()=>{
+  const company = document.getElementById("aCompany").value.trim();
+  const role    = document.getElementById("aRole").value.trim();
+  const last    = document.getElementById("aLast").value;
+  if(!company||!role||!last){ alert("Company, Role and Last Date are required."); return; }
+
+  const refName = document.getElementById("aReferral").value.trim();
+  const refLink = document.getElementById("aLink").value.trim();
+
+  records.push({
+    id: nextId++,
+    company, role,
+    referrals: refName ? [{ name:refName, link:refLink }] : [],
+    salary: document.getElementById("aSalary").value.trim() || "—",
+    driveDate: document.getElementById("aDrive").value,
+    lastDate: last,
+    hrEmails: document.getElementById("aEmails").value.trim() ? [document.getElementById("aEmails").value.trim()] : [],
+    notes: document.getElementById("aNotes").value.trim(),
+    daysLeftOverride: null,
+    daysLeftSetOn: null,
+    updates:{ referralAsked:false, communicating:false, referralReceived:false, interviewScheduled:false }
+  });
+
+  document.getElementById("addModal").classList.remove("open");
+  renderTable(getCurrentFilter());
+  showToast("Listing added");
+};
+
+/* ── SEARCH ── */
+function getCurrentFilter(){
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  if(!q) return records;
+  return records.filter(r=>
+    r.company.toLowerCase().includes(q) ||
+    r.role.toLowerCase().includes(q) ||
+    r.referrals.some(ref=>ref.name.toLowerCase().includes(q))
+  );
+}
+
+document.getElementById("searchInput").addEventListener("input",()=>renderTable(getCurrentFilter()));
+
+/* ── TOAST ── */
+function showToast(msg){
+  const t=document.getElementById("toast");
+  t.textContent="✓ "+msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),2200);
+}
+
+/* ── INIT ── */
+renderTable(records);
+</script>
+</body>
+</html>
